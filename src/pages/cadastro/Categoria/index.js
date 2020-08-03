@@ -3,41 +3,50 @@ import { Link } from 'react-router-dom';
 import PageDefault from '../../../components/PageDefault';
 import FormField from '../../../components/FormField';
 import Button from '../../../components/Button';
+import useForm from '../../../hooks/useForm';
 
 function CadastroCategoria() {
-  const [categorias, setCategorias] = useState([]);
-
-  const initialValues = {
+  const valoresIniciais = {
     nome: '',
     descricao: '',
-    cod: '',
+    cor: '',
   };
 
-  const [values, setValues] = useState(initialValues);
+  const { handleChange, values, clearForm } = useForm(valoresIniciais);
 
-  function setValue(key, value) {
-    setValues({
-      ...values,
-      [key]: value,
-    });
-  }
-
-  function handleChange(infosDoEvento) {
-    setValue(
-      infosDoEvento.target.getAttribute('name'),
-      infosDoEvento.target.value,
-    );
-  }
+  const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
-    const URL_API = 'http://localhost:8080/categorias';
-    fetch(URL_API).then(async (response) => {
-      const data = await response.json();
-      setCategorias([
-        ...data,
-      ]);
-    });
-  });
+    const URL_TOP = window.location.hostname.includes('localhost')
+      ? 'http://localhost:8080/categorias'
+      : 'https://devsoutinhoflix.herokuapp.com/categorias';
+    // E a ju ama variáveis
+    fetch(URL_TOP)
+      .then(async (respostaDoServidor) => {
+        const resposta = await respostaDoServidor.json();
+        setCategorias([
+          ...resposta,
+        ]);
+      });
+
+    // setTimeout(() => {
+    //   setCategorias([
+    //     ...categorias,
+    //     {
+    //       id: 1,
+    //       nome: 'Front End',
+    //       descricao: 'Uma categoria bacanudassa',
+    //       cor: '#cbd1ff',
+    //     },
+    //     {
+    //       id: 2,
+    //       nome: 'Back End',
+    //       descricao: 'Outra categoria bacanudassa',
+    //       cor: '#cbd1ff',
+    //     },
+    //   ]);
+    // }, 4 * 1000);
+  }, []);
 
   return (
     <PageDefault>
@@ -52,16 +61,18 @@ function CadastroCategoria() {
           ...categorias,
           values,
         ]);
-        setValues(initialValues);
+
+        clearForm();
       }}
       >
+
         <FormField
           label="Nome da Categoria"
-          type="text"
           name="nome"
           value={values.nome}
           onChange={handleChange}
         />
+
         <FormField
           label="Descrição"
           type="textarea"
@@ -69,6 +80,7 @@ function CadastroCategoria() {
           value={values.descricao}
           onChange={handleChange}
         />
+
         <FormField
           label="Cor"
           type="color"
@@ -76,14 +88,23 @@ function CadastroCategoria() {
           value={values.cor}
           onChange={handleChange}
         />
+
         <Button>
           Cadastrar
         </Button>
       </form>
+
+      {categorias.length === 0 && (
+        <div>
+          {/* Cargando... */}
+          Loading...
+        </div>
+      )}
+
       <ul>
         {categorias.map((categoria) => (
-          <li key={`${categoria.nome}`}>
-            {categoria.nome}
+          <li key={`${categoria.titulo}`}>
+            {categoria.titulo}
           </li>
         ))}
       </ul>
